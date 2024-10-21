@@ -2,8 +2,8 @@ package service
 
 import (
 	"basic/api/dto"
-	"basic/models"
 	"basic/api/repository"
+	"basic/models"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -11,6 +11,8 @@ import (
 
 type UserService interface {
 	CreateUser(dto dto.CreateUserRequest) (dto.CreateUserResponse, error)
+	GetAllUsers() ([]models.User, error)
+	GetUserByID(id uint) (*models.User, error)
 }
 
 type userService struct {
@@ -53,4 +55,12 @@ func (s *userService) CreateUser(req dto.CreateUserRequest) (dto.CreateUserRespo
 	}
 
 	return response, nil
+}
+
+func (s *userService) GetAllUsers() ([]models.User, error) {
+	return s.repository.GetAllUsers()
+}
+
+func (s *userService) GetUserByID(id uint) (*models.User, error) {
+	return s.repository.GetUserByID(id)
 }

@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"
 
 services:
   app:
@@ -12,7 +12,7 @@ services:
     depends_on:
       - db
     environment:
-      - PG_HOST=172.18.0.1 # Nama container Postgres di docker-compose.yml
+      - PG_HOST=db # Nama container Postgres di docker-compose.yml
       - PG_PORT=5432
       - PG_USER=postgres
       - PG_PASSWORD=password
