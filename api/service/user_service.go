@@ -4,6 +4,7 @@ import (
 	"basic/api/dto"
 	"basic/api/repository"
 	"basic/models"
+	"errors"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -13,6 +14,8 @@ type UserService interface {
 	CreateUser(dto dto.CreateUserRequest) (dto.CreateUserResponse, error)
 	GetAllUsers() ([]models.User, error)
 	GetUserByID(id uint) (*models.User, error)
+	UpdateUser(id uint, user models.User) (models.User, error)
+	DeleteUser(id uint) error
 }
 
 type userService struct {
@@ -63,4 +66,39 @@ func (s *userService) GetAllUsers() ([]models.User, error) {
 
 func (s *userService) GetUserByID(id uint) (*models.User, error) {
 	return s.repository.GetUserByID(id)
+}
+
+func (s *userService) UpdateUser(id uint, updatedUser models.User) (models.User, error) {
+	// Cari user berdasarkan ID
+	user, err := s.repository.FindByID(id)
+	if err != nil {
+		return models.User{}, errors.New("user not found")
+	}
+
+	// Update fields
+	user.Username = updatedUser.Username
+	user.Email = updatedUser.Email
+	user.Password = updatedUser.Password // Pastikan password sudah di-hash sebelumnya
+
+	// Simpan user yang sudah diupdate
+	err = s.repository.Update(user)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (s *userService) DeleteUser(id uint) error {
+	user, err := s.repository.FindByID(id)
+	if err != nil {
+		return errors.New("user not found")
+	}
+
+	err = s.repository.Delete(user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"basic/api/dto"
 	"basic/api/service"
+	"basic/models"
 	"net/http"
 	"strconv"
 
@@ -65,4 +66,52 @@ func (h *UserHandler) GetUserByID(c *gin.Context) { // Handler untuk mendapatkan
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+// Edit user by ID
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	var input dto.CreateUserRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user := models.User{
+		Username: input.Username,
+		Email:    input.Email,
+		Password: input.Password, // Jangan lupa hash password di service atau handler
+	}
+
+	updatedUser, err := h.userService.UpdateUser(uint(id), user)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": updatedUser})
+}
+
+// Hapus user by ID
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	err = h.userService.DeleteUser(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }

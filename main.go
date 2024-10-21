@@ -32,17 +32,15 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	// Initialize Gin router
-	r := gin.Default()
+	router := gin.Default()
+	api := router.Group("/api/v1")
 
-	// Endpoint Create User
-	r.POST("/users", userHandler.CreateUser)
-
-	// Endpoint Get All Users
-	r.GET("/users", userHandler.GetAllUsers)
-
-	// Endpoint Get User By ID
-	r.GET("/users/:id", userHandler.GetUserByID)
+	api.POST("/users", userHandler.CreateUser)
+	api.GET("/users", userHandler.GetAllUsers)
+	api.GET("/users/:id", userHandler.GetUserByID)
+	api.PUT("/users/:id", userHandler.UpdateUser)
+	api.DELETE("/users/:id", userHandler.DeleteUser)
 
 	// Start server
-	r.Run(":8080")
+	router.Run(":8080")
 }
