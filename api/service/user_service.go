@@ -65,29 +65,35 @@ func (s *userService) GetAllUsers() ([]models.User, error) {
 }
 
 func (s *userService) GetUserByID(id uint) (*models.User, error) {
-	return s.repository.GetUserByID(id)
+	return s.repository.FindByID(id)
 }
 
 func (s *userService) UpdateUser(id uint, updatedUser models.User) (models.User, error) {
-	// Cari user berdasarkan ID
+	// Cari user berdasarkan ID menggunakan fungsi gabungan
 	user, err := s.repository.FindByID(id)
 	if err != nil {
 		return models.User{}, errors.New("user not found")
 	}
 
-	// Update fields
-	user.Username = updatedUser.Username
-	user.Email = updatedUser.Email
-	user.Password = updatedUser.Password // Pastikan password sudah di-hash sebelumnya
-
-	// Simpan user yang sudah diupdate
-	err = s.repository.Update(user)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(updatedUser.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return models.User{}, err
 	}
 
-	return user, nil
+	// Update fields
+	user.Username = updatedUser.Username
+	user.Email = updatedUser.Email
+	user.Password = string(hashedPassword)
+
+	// Simpan user yang sudah diupdate
+	err = s.repository.Update(*user)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return *user, nil
 }
+
 
 func (s *userService) DeleteUser(id uint) error {
 	user, err := s.repository.FindByID(id)
