@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"basic/api/auth"
 	"basic/api/dto"
 	"basic/api/service"
 	"basic/models"
@@ -8,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
@@ -114,4 +116,38 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+func (h *UserHandler) Login(jwtService auth.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Login Request Body
+		var loginRequest dto.LoginRequest
+		if err := c.ShouldBindJSON(&loginRequest); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		// Get user by username from database
+		user, err := h.userService.GetUserByUsername(loginRequest.Username)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username"})
+			return
+		}
+
+		// Compare password with hashed password
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+			return
+		}
+
+		// Generate token
+		token, err := jwtService.GenerateToken(user.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"token": token})
+	}
 }

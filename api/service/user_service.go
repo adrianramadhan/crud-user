@@ -14,6 +14,7 @@ type UserService interface {
 	CreateUser(dto dto.CreateUserRequest) (dto.CreateUserResponse, error)
 	GetAllUsers() ([]models.User, error)
 	GetUserByID(id uint) (*models.User, error)
+	GetUserByUsername(username string) (*models.User, error)
 	UpdateUser(id uint, user models.User) (models.User, error)
 	DeleteUser(id uint) error
 }
@@ -94,7 +95,6 @@ func (s *userService) UpdateUser(id uint, updatedUser models.User) (models.User,
 	return *user, nil
 }
 
-
 func (s *userService) DeleteUser(id uint) error {
 	user, err := s.repository.FindByID(id)
 	if err != nil {
@@ -107,4 +107,12 @@ func (s *userService) DeleteUser(id uint) error {
 	}
 
 	return nil
+}
+
+func (s *userService) GetUserByUsername(username string) (*models.User, error) {
+	user, err := s.repository.FindByUsername(username)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+	return user, nil
 }

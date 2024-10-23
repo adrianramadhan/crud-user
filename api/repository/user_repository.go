@@ -10,6 +10,7 @@ type UserRepository interface {
 	Create(user *models.User) error
 	GetAllUsers() ([]models.User, error)
 	FindByID(id uint) (*models.User, error)
+	FindByUsername(username string) (*models.User, error)
 	Update(user models.User) error
 	Delete(user *models.User) error
 }
@@ -50,4 +51,13 @@ func (r *userRepository) Update(user models.User) error {
 
 func (r *userRepository) Delete(user *models.User) error {
 	return r.db.Delete(&user).Error
+}
+
+func (r *userRepository) FindByUsername(username string) (*models.User, error) {
+	var user models.User
+	result := r.db.Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
 }
