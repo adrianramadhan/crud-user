@@ -7,8 +7,6 @@ import (
 	"basic/api/repository"
 	"basic/api/service"
 	"basic/config"
-	"basic/models"
-	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,14 +17,6 @@ func main() {
 	if err != nil {
 		panic("Failed to connect to the database!")
 	}
-
-	// Migrate the schema (create/update table)
-	err = db.AutoMigrate(&models.User{})
-	if err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
-	}
-
-	log.Println("Database migration completed!")
 
 	// Initialize repositories, services, and handlers
 	userRepo := repository.NewUserRepository(db)
